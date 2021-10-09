@@ -1,0 +1,2 @@
+execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -P ${CMAKE_SCRIPT_MODE_FILE}/../scripts/install_zlib.cmake)
+execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -P ${CMAKE_SCRIPT_MODE_FILE}/../scripts/install_openssl.cmake)
