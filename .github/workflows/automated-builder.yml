@@ -42,7 +42,7 @@ jobs:
           - x86
           - x64
     needs: read-versions
-    uses: ${{ env.GITHUB_REPOSITORY }}/.github/workflows/build-qt-workflow.yml@main
+    uses: 6ziv/QtStaticBuildForWindows/.github/workflows/build-qt-workflow.yml@main
     with: 
       zlib-version: ${{ needs.read-versions.outputs.zlib-version }}
       openssl-version: ${{ needs.read-versions.outputs.openssl-version }}
