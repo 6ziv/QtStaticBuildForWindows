@@ -20,7 +20,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf OpenSSL_1_1_1l.tar.gz)
 file(MAKE_DIRECTORY openssl-OpenSSL_1_1_1l/build)
 if(NOT DEFINED DEBUG_BUILD)
 execute_process(
-	COMMAND ${PERL_COMMAND} ../Configure --prefix=${CMAKE_INSTALL_PREFIX}/openssl --openssldir=${CMAKE_INSTALL_PREFIX}/openssl --release --with-zlib-include="${CMAKE_INSTALL_PREFIX}/zlib/include" --with-zlib-lib="${CMAKE_INSTALL_PREFIX}/zlib/lib/zlib.lib" no-shared zlib "ARFLAGS=/NOLOGO /LTCG" "CFLAGS=/MT /W3 /O2" "CXXFLAGS=/MT /W3 /O2" ${OPENSSL_TARGET}
+	COMMAND ${PERL_COMMAND} ../Configure --prefix=${CMAKE_INSTALL_PREFIX}/openssl --openssldir=${CMAKE_INSTALL_PREFIX}/openssl --release --with-zlib-include="${CMAKE_INSTALL_PREFIX}/zlib/include" --with-zlib-lib="${CMAKE_INSTALL_PREFIX}/zlib/lib/zlib.lib" no-shared zlib "ARFLAGS=/NOLOGO /LTCG" "CFLAGS=/MT /W3 /O2" "CXXFLAGS=/MT /W3 /O2" VC-WIN64A
 	WORKING_DIRECTORY openssl-OpenSSL_1_1_1l/build
 )
 else()

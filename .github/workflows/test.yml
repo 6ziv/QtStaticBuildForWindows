@@ -1,0 +1,60 @@
+name: static-qt-for-windows
+on: [push]
+jobs:
+  read-versions:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: pwsh
+    outputs:
+      zlib-version: ${{ steps.read-zlib-version.outputs.version }}
+      openssl-version: ${{ steps.read-openssl-version.outputs.version }}
+      qt-version: ${{ steps.read-qt-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          path: project
+      - id: read-zlib-json
+        uses: ashley-taylor/read-json-property-action@v1.0
+        with:
+          path: ./project/versions.json
+          property: zlib-version
+      - id: read-zlib-version
+        run: echo "::set-output name=version::${{ steps.read-zlib-json.outputs.value }}"
+      - id: read-openssl-json
+        uses: ashley-taylor/read-json-property-action@v1.0
+        with:
+          path: ./project/versions.json
+          property: openssl-version
+      - id: read-openssl-version
+        run: echo "::set-output name=version::${{ steps.read-openssl-json.outputs.value }}"
+      - id: read-qt-json
+        uses: ashley-taylor/read-json-property-action@v1.0
+        with:
+          path: ./project/versions.json
+          property: qt-version
+      - id: read-qt-version
+        run: echo "::set-output name=version::${{ steps.read-qt-json.outputs.value }}"
+  build-qt:
+    needs: read-versions
+    uses: 6ziv/try_actions/.github/workflows/build-qt-workflow.yml@main
+    with: 
+      zlib-version: ${{ needs.read-versions.outputs.zlib-version }}
+      openssl-version: ${{ needs.read-versions.outputs.openssl-version }}
+      qt-version: ${{ needs.read-versions.outputs.qt-version }}
+  upload-release:
+    needs: build-qt
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/download-artifact@v2
+        with: 
+          name: qt
+          path: ${{ runner.temp }}/qt
+      - run: 7z a ${{ runner.temp }}/qt-${{ steps.read-qt-version.outputs.version }}.zip ${{ runner.temp }}/qt -v2g
+      - uses: softprops/action-gh-release@v1
+        with:
+          name: Qt-${{ steps.read-qt-version.outputs.version }}
+          file: ${{ runner.temp }}/qt.z*
