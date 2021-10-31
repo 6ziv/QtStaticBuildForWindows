@@ -12,7 +12,11 @@ on:
         required: false
         default: '1_1_1l'
         type: string
-      qt-version:
+      qt-version-major:
+        description: 'Qt Version'
+        required: true
+        type: string
+      qt-version-minor:
         description: 'Qt Version'
         required: true
         type: string
@@ -28,7 +32,7 @@ jobs:
     steps: 
       - run: echo "zlib version = ${{ inputs.zlib-version }}"
       - run: echo "openssl version = ${{ inputs.openssl-version }}"
-      - run: echo "qt version = ${{ inputs.qt-version }}"
+      - run: echo "qt version = ${{ inputs.qt-version-major }}.${{ inputs.qt-version-minor }}"
       - run: echo "arch = x86"
         if: ${{ inputs.arch == 'x86' }}
       - run: echo "arch = x64"
@@ -160,17 +164,17 @@ jobs:
         with: 
           name: openssl-${{ inputs.arch }}
           path: ${{ runner.temp }}\openssl
-      - run: aria2c -j8 -o "qt-everywhere-src-${{ inputs.qt-version }}.tar.xz.meta" "https://download.qt.io/official_releases/qt/6.2/6.2.1/single/qt-everywhere-src-${{ inputs.qt-version }}.tar.xz"
+      - run: aria2c -j8 -o "qt-everywhere-src-${{ inputs.qt-version-major }}.${{ inputs.qt-version-minor }}.tar.xz.meta" "https://download.qt.io/official_releases/qt/${{ inputs.qt-version-major }}/${{ inputs.qt-version-major }}.${{ inputs.qt-version-minor }}/single/qt-everywhere-src-${{ inputs.qt-version-major }}.${{ inputs.qt-version-minor }}.tar.xz"
         working-directory: C:\
-      - run: cmake -E tar xvf qt-everywhere-src-${{ inputs.qt-version }}.tar.xz
+      - run: cmake -E tar xvf qt-everywhere-src-${{ inputs.qt-version-major }}.${{ inputs.qt-version-minor }}.tar.xz
         working-directory: C:\
-      - run: New-Item C:\qt-everywhere-src-${{ inputs.qt-version }}\build -ItemType Directory
+      - run: New-Item C:\qt-everywhere-src-${{ inputs.qt-version-major }}.${{ inputs.qt-version-minor }}\build -ItemType Directory
       - run: ..\configure --prefix=C:/Qt -static -static-runtime -release -qt-doubleconversion -DQT_FEATURE_qt3d_qt_assimp=ON -DQT_FEATURE_qtquick3d_qt_assimp=ON -qt-tiff -qt-webp -qt-sqlite -qt-libpng -qt-libjpeg -qt-freetype -qt-harfbuzz -qt-pcre -qt-zlib -openssl -openssl-linked -ltcg -no-pch -no-dbus -I${{ runner.temp }}/openssl/include -L${{ runner.temp }}/openssl/lib -I${{ runner.temp }}/zlib/include -L${{ runner.temp }}/zlib/lib -- -DOPENSSL_USE_STATIC_LIBS=ON -DCMAKE_PREFIX_PATH="${{ runner.temp }}/zlib;${{ runner.temp }}/OpenSSL"
-        working-directory: C:\qt-everywhere-src-${{ inputs.qt-version }}\build
+        working-directory: C:\qt-everywhere-src-${{ inputs.qt-version-major }}.${{ inputs.qt-version-minor }}\build
       - run: cmake --build . --parallel
-        working-directory: C:\qt-everywhere-src-${{ inputs.qt-version }}\build
+        working-directory: C:\qt-everywhere-src-${{ inputs.qt-version-major }}.${{ inputs.qt-version-minor }}\build
       - run: cmake --install .
-        working-directory: C:\qt-everywhere-src-${{ inputs.qt-version }}\build
+        working-directory: C:\qt-everywhere-src-${{ inputs.qt-version-major }}.${{ inputs.qt-version-minor }}\build
       - uses: actions/upload-artifact@v2
         with:
           name: qt-${{ inputs.arch }}
