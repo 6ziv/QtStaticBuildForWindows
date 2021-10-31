@@ -35,21 +35,24 @@ jobs:
           property: qt-version
       - id: read-qt-version
         run: echo "::set-output name=version::${{ steps.read-qt-json.outputs.value }}"
-  build-qt:
-    strategy:
-      matrix:
-        arch:
-          - x86
-          - x64
+  build-qt-x86:
     needs: read-versions
     uses: 6ziv/QtStaticBuildForWindows/.github/workflows/build-qt-workflow.yml@main
     with: 
       zlib-version: ${{ needs.read-versions.outputs.zlib-version }}
       openssl-version: ${{ needs.read-versions.outputs.openssl-version }}
       qt-version: ${{ needs.read-versions.outputs.qt-version }}
-      arch: ${{ matrix.arch }}
-  upload-release:
-    needs: build-qt
+      arch: 'x86'
+  build-qt-x64:
+    needs: read-versions
+    uses: 6ziv/QtStaticBuildForWindows/.github/workflows/build-qt-workflow.yml@main
+    with: 
+      zlib-version: ${{ needs.read-versions.outputs.zlib-version }}
+      openssl-version: ${{ needs.read-versions.outputs.openssl-version }}
+      qt-version: ${{ needs.read-versions.outputs.qt-version }}
+      arch: 'x64'
+  upload-release-x86:
+    needs: build-qt-x86
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -57,10 +60,26 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with: 
-          name: qt
+          name: qt-x86
           path: ${{ runner.temp }}/qt
-      - run: 7z a ${{ runner.temp }}/qt-${{ steps.read-qt-version.outputs.version }}.zip ${{ runner.temp }}/qt -v2g
+      - run: 7z a ${{ runner.temp }}/qt-${{ steps.read-qt-version.outputs.version }}-x86.zip ${{ runner.temp }}/qt -v2g
+      - uses: softprops/action-gh-release@v1
+        with:
+          name: Qt-${{ steps.read-qt-version.outputs.version }}(x86)
+          file: ${{ runner.temp }}/qt-${{ steps.read-qt-version.outputs.version }}-x86.z*
+  upload-release-x64:
+    needs: build-qt-x64
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/download-artifact@v2
+        with: 
+          name: qt-x64
+          path: ${{ runner.temp }}/qt
+      - run: 7z a ${{ runner.temp }}/qt-${{ steps.read-qt-version.outputs.version }}-x64.zip ${{ runner.temp }}/qt -v2g
       - uses: softprops/action-gh-release@v1
         with:
           name: Qt-${{ steps.read-qt-version.outputs.version }}(x64)
-          file: ${{ runner.temp }}/qt.z*
+          file: ${{ runner.temp }}/qt-${{ steps.read-qt-version.outputs.version }}-x64.z*
