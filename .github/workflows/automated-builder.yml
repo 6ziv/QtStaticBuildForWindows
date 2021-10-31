@@ -9,8 +9,8 @@ jobs:
     outputs:
       zlib-version: ${{ steps.read-zlib-version.outputs.version }}
       openssl-version: ${{ steps.read-openssl-version.outputs.version }}
-      qt-version-major: ${{ steps.read-qt-version-major.outputs.version }}
-      qt-version-minor: ${{ steps.read-qt-version-minor.outputs.version }}
+      qt-version-major: ${{ steps.read-qt-major-version.outputs.version }}
+      qt-version-minor: ${{ steps.read-qt-minor-version.outputs.version }}
     steps:
       - uses: actions/checkout@v2
         with: 
