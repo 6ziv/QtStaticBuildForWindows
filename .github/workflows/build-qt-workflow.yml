@@ -34,9 +34,9 @@ jobs:
       - run: echo "arch = x64"
         if: ${{ inputs.arch == 'x64' }}
       - run: echo "Unknown arch"
-        if: ${{ inputs.arch != 'x86' && inputs.zlib-version != 'x64' }}
+        if: ${{ inputs.arch != 'x86' && inputs.arch != 'x64' }}
       - run: exit 1
-        if: ${{ inputs.arch != 'x86' && inputs.zlib-version != 'x64' }}
+        if: ${{ inputs.arch != 'x86' && inputs.arch != 'x64' }}
   build-zlib:
     runs-on: windows-2022
     needs: print-versions
