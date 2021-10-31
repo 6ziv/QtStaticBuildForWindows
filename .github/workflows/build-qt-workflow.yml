@@ -16,6 +16,9 @@ on:
         description: 'Qt Version'
         required: true
         type: string
+      arch:
+        required: true
+        type: string
 jobs:
   print-versions:
     runs-on: ubuntu-20.04
@@ -26,8 +29,17 @@ jobs:
       - run: echo "zlib version = ${{ inputs.zlib-version }}"
       - run: echo "openssl version = ${{ inputs.openssl-version }}"
       - run: echo "qt version = ${{ inputs.qt-version }}"
+      - run: echo "arch = x86"
+        if: ${{ inputs.arch == 'x86' }}
+      - run: echo "arch = x64"
+        if: ${{ inputs.arch == 'x64' }}
+      - run: echo "Unknown arch"
+        if: ${{ inputs.arch != 'x86' && inputs.zlib-version != 'x64' }}
+      - run: exit 1
+        if: ${{ inputs.arch != 'x86' && inputs.zlib-version != 'x64' }}
   build-zlib:
     runs-on: windows-2022
+    needs: print-versions
     steps:
       - uses: jwlawson/actions-setup-cmake@v1.9
         with:
@@ -35,6 +47,15 @@ jobs:
       - run: aria2c -j8 -o "zlib-v${{ inputs.zlib-version }}.tar.gz" "https://github.com/madler/zlib/archive/refs/tags/v${{ inputs.zlib-version }}.tar.gz"
       - run: cmake -E tar xvf zlib-v${{ inputs.zlib-version }}.tar.gz
       - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+          spectre: true
+        if: ${{ inputs.arch == 'x86' }}
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          spectre: true
+        if: ${{ inputs.arch == 'x64' }}
       - run: nmake -f win32/Makefile.msc CFLAGS="/MT /W3 /O2" LDFLAGS="/NOLOGO" ARFLAGS="/NOLOGO /LTCG"
         working-directory: .\zlib-${{ inputs.zlib-version }}
       - run: New-Item ${{ runner.temp }}\zlib\include -ItemType Directory
@@ -64,7 +85,7 @@ jobs:
           write-mode: overwrite
       - uses: actions/upload-artifact@v2
         with:
-          name: zlib
+          name: zlib-${{ inputs.arch }}
           path: ${{ runner.temp }}\zlib
           retention-days: 1
   build-openssl:
@@ -86,8 +107,21 @@ jobs:
       - run: cmake -E tar xvf OpenSSL_${{ inputs.openssl-version }}.tar.gz
       - run: New-Item .\openssl-OpenSSL_${{ inputs.openssl-version }}\build -ItemType Directory
       - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+          spectre: true
+        if: ${{ inputs.arch == 'x86' }}
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          spectre: true
+        if: ${{ inputs.arch == 'x64' }}
+      - run: perl ../Configure --prefix=${{ runner.temp }}/openssl --openssldir=${{ runner.temp }}/openssl --release --with-zlib-include="${{ runner.temp }}/zlib/include" --with-zlib-lib="${{ runner.temp }}/zlib/lib/zlib.lib" no-shared zlib "ARFLAGS=/NOLOGO /LTCG" "CFLAGS=/MT /W3 /O2" "CXXFLAGS=/MT /W3 /O2" VC-WIN32
+        working-directory: .\openssl-OpenSSL_${{ inputs.openssl-version }}\build
+        if: ${{ inputs.arch == 'x86' }}
       - run: perl ../Configure --prefix=${{ runner.temp }}/openssl --openssldir=${{ runner.temp }}/openssl --release --with-zlib-include="${{ runner.temp }}/zlib/include" --with-zlib-lib="${{ runner.temp }}/zlib/lib/zlib.lib" no-shared zlib "ARFLAGS=/NOLOGO /LTCG" "CFLAGS=/MT /W3 /O2" "CXXFLAGS=/MT /W3 /O2" VC-WIN64A
         working-directory: .\openssl-OpenSSL_${{ inputs.openssl-version }}\build
+        if: ${{ inputs.arch == 'x64' }}
       - run: nmake
         working-directory: .\openssl-OpenSSL_${{ inputs.openssl-version }}\build
       - run: nmake install
@@ -95,7 +129,7 @@ jobs:
       - run: lib /OUT:${{ runner.temp }}\openssl\lib\libssl.lib ${{ runner.temp }}\openssl\lib\libssl.lib ${{ runner.temp }}\zlib\lib\zlib.lib
       - uses: actions/upload-artifact@v2
         with:
-          name: openssl
+          name: openssl-${{ inputs.arch }}
           path: ${{ runner.temp }}\openssl
           retention-days: 1
   build-qt:
@@ -109,6 +143,15 @@ jobs:
       - run: 7z x "strawberry-perl-5.32.1.1-64bit-portable.zip" perl -r
       - run: echo "$env:GITHUB_WORKSPACE\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+          spectre: true
+        if: ${{ inputs.arch == 'x86' }}
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          spectre: true
+        if: ${{ inputs.arch == 'x64' }}
       - uses: actions/download-artifact@v2
         with: 
           name: zlib
@@ -128,7 +171,7 @@ jobs:
         working-directory: .\qt-everywhere-src-${{ inputs.qt-version }}\build
       - uses: actions/upload-artifact@v2
         with:
-          name: qt
+          name: qt-${{ inputs.arch }}
           path: ${{ runner.temp }}\qt
           retention-days: 1
       - if: always()

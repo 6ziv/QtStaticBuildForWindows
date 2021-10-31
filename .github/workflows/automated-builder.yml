@@ -36,12 +36,18 @@ jobs:
       - id: read-qt-version
         run: echo "::set-output name=version::${{ steps.read-qt-json.outputs.value }}"
   build-qt:
+    strategy:
+      matrix:
+        arch:
+          - x86
+          - x64
     needs: read-versions
     uses: 6ziv/try_actions/.github/workflows/build-qt-workflow.yml@main
     with: 
       zlib-version: ${{ needs.read-versions.outputs.zlib-version }}
       openssl-version: ${{ needs.read-versions.outputs.openssl-version }}
       qt-version: ${{ needs.read-versions.outputs.qt-version }}
+      arch: ${{ matrix.arch }}
   upload-release:
     needs: build-qt
     runs-on: ubuntu-20.04
@@ -56,5 +62,5 @@ jobs:
       - run: 7z a ${{ runner.temp }}/qt-${{ steps.read-qt-version.outputs.version }}.zip ${{ runner.temp }}/qt -v2g
       - uses: softprops/action-gh-release@v1
         with:
-          name: Qt-${{ steps.read-qt-version.outputs.version }}
+          name: Qt-${{ steps.read-qt-version.outputs.version }}(x64)
           file: ${{ runner.temp }}/qt.z*
