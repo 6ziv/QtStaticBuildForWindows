@@ -26,8 +26,6 @@ jobs:
       run:
         shell: pwsh
     steps: 
-      - run: Get-Volume
-      - run: exit 1
       - run: echo "zlib version = ${{ inputs.zlib-version }}"
       - run: echo "openssl version = ${{ inputs.openssl-version }}"
       - run: echo "qt version = ${{ inputs.qt-version }}"
@@ -43,6 +41,8 @@ jobs:
     runs-on: windows-2022
     needs: print-versions
     steps:
+      - run: Get-Volume
+      - run: exit 1
       - uses: jwlawson/actions-setup-cmake@v1.9
         with:
           cmake-version: '3.22.x'
