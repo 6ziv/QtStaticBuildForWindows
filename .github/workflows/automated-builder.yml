@@ -58,7 +58,8 @@ jobs:
     with: 
       zlib-version: ${{ needs.read-versions.outputs.zlib-version }}
       openssl-version: ${{ needs.read-versions.outputs.openssl-version }}
-      qt-version: ${{ needs.read-versions.outputs.qt-version }}
+      qt-version-major: ${{ needs.read-versions.outputs.qt-version-major }}
+      qt-version-minor: ${{ needs.read-versions.outputs.qt-version-minor }}
       arch: 'x64'
   upload-release-x86:
     needs: build-qt-x86
