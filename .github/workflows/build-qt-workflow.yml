@@ -94,7 +94,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with: 
-          name: zlib
+          name: zlib-${{ inputs.arch }}
           path: ${{ runner.temp }}\zlib
       - uses: jwlawson/actions-setup-cmake@v1.9
         with:
@@ -154,11 +154,11 @@ jobs:
         if: ${{ inputs.arch == 'x64' }}
       - uses: actions/download-artifact@v2
         with: 
-          name: zlib
+          name: zlib-${{ inputs.arch }}
           path: ${{ runner.temp }}\zlib
       - uses: actions/download-artifact@v2
         with: 
-          name: openssl
+          name: openssl-${{ inputs.arch }}
           path: ${{ runner.temp }}\openssl
       - run: aria2c -j8 -o "qt-everywhere-src-${{ inputs.qt-version }}.tar.xz.meta" "https://download.qt.io/official_releases/qt/6.2/6.2.1/single/qt-everywhere-src-${{ inputs.qt-version }}.tar.xz"
       - run: cmake -E tar xvf qt-everywhere-src-${{ inputs.qt-version }}.tar.xz
@@ -173,16 +173,4 @@ jobs:
         with:
           name: qt-${{ inputs.arch }}
           path: ${{ runner.temp }}\qt
-          retention-days: 1
-      - if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: CMakeOutput.log
-          path: D:/a/try_actions/try_actions/qt-everywhere-src-6.2.1/build/CMakeFiles/CMakeOutput.log
-          retention-days: 1
-      - if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: CMakeError.log
-          path: D:/a/try_actions/try_actions/qt-everywhere-src-6.2.1/build/CMakeFiles/CMakeError.log
           retention-days: 1
