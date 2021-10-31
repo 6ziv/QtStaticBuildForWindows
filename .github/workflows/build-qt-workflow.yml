@@ -41,8 +41,6 @@ jobs:
     runs-on: windows-2022
     needs: print-versions
     steps:
-      - run: Get-Volume
-      - run: exit 1
       - uses: jwlawson/actions-setup-cmake@v1.9
         with:
           cmake-version: '3.22.x'
@@ -163,16 +161,18 @@ jobs:
           name: openssl-${{ inputs.arch }}
           path: ${{ runner.temp }}\openssl
       - run: aria2c -j8 -o "qt-everywhere-src-${{ inputs.qt-version }}.tar.xz.meta" "https://download.qt.io/official_releases/qt/6.2/6.2.1/single/qt-everywhere-src-${{ inputs.qt-version }}.tar.xz"
+        working-directory: C:\
       - run: cmake -E tar xvf qt-everywhere-src-${{ inputs.qt-version }}.tar.xz
-      - run: New-Item .\qt-everywhere-src-${{ inputs.qt-version }}\build -ItemType Directory
-      - run: ..\configure --prefix=${{ runner.temp }}/Qt -static -static-runtime -release -qt-doubleconversion -DQT_FEATURE_qt3d_qt_assimp=ON -DQT_FEATURE_qtquick3d_qt_assimp=ON -qt-tiff -qt-webp -qt-sqlite -qt-libpng -qt-libjpeg -qt-freetype -qt-harfbuzz -qt-pcre -qt-zlib -openssl -openssl-linked -ltcg -no-pch -no-dbus -I${{ runner.temp }}/openssl/include -L${{ runner.temp }}/openssl/lib -I${{ runner.temp }}/zlib/include -L${{ runner.temp }}/zlib/lib -- -DOPENSSL_USE_STATIC_LIBS=ON -DCMAKE_PREFIX_PATH="${{ runner.temp }}/zlib;${{ runner.temp }}/OpenSSL"
-        working-directory: .\qt-everywhere-src-${{ inputs.qt-version }}\build
+        working-directory: C:\
+      - run: New-Item C:\qt-everywhere-src-${{ inputs.qt-version }}\build -ItemType Directory
+      - run: ..\configure --prefix=C:/Qt -static -static-runtime -release -qt-doubleconversion -DQT_FEATURE_qt3d_qt_assimp=ON -DQT_FEATURE_qtquick3d_qt_assimp=ON -qt-tiff -qt-webp -qt-sqlite -qt-libpng -qt-libjpeg -qt-freetype -qt-harfbuzz -qt-pcre -qt-zlib -openssl -openssl-linked -ltcg -no-pch -no-dbus -I${{ runner.temp }}/openssl/include -L${{ runner.temp }}/openssl/lib -I${{ runner.temp }}/zlib/include -L${{ runner.temp }}/zlib/lib -- -DOPENSSL_USE_STATIC_LIBS=ON -DCMAKE_PREFIX_PATH="${{ runner.temp }}/zlib;${{ runner.temp }}/OpenSSL"
+        working-directory: C:\qt-everywhere-src-${{ inputs.qt-version }}\build
       - run: cmake --build . --parallel
-        working-directory: .\qt-everywhere-src-${{ inputs.qt-version }}\build
+        working-directory: C:\qt-everywhere-src-${{ inputs.qt-version }}\build
       - run: cmake --install .
-        working-directory: .\qt-everywhere-src-${{ inputs.qt-version }}\build
+        working-directory: C:\qt-everywhere-src-${{ inputs.qt-version }}\build
       - uses: actions/upload-artifact@v2
         with:
           name: qt-${{ inputs.arch }}
-          path: ${{ runner.temp }}\qt
+          path: C:\qt
           retention-days: 1

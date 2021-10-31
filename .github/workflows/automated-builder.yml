@@ -9,7 +9,8 @@ jobs:
     outputs:
       zlib-version: ${{ steps.read-zlib-version.outputs.version }}
       openssl-version: ${{ steps.read-openssl-version.outputs.version }}
-      qt-version: ${{ steps.read-qt-version.outputs.version }}
+      qt-version-major: ${{ steps.read-qt-version-major.outputs.version }}
+      qt-version-minor: ${{ steps.read-qt-version-minor.outputs.version }}
     steps:
       - uses: actions/checkout@v2
         with: 
@@ -28,20 +29,28 @@ jobs:
           property: openssl-version
       - id: read-openssl-version
         run: echo "::set-output name=version::${{ steps.read-openssl-json.outputs.value }}"
-      - id: read-qt-json
+      - id: read-qt-json-major
         uses: ashley-taylor/read-json-property-action@v1.0
         with:
           path: ./project/versions.json
-          property: qt-version
-      - id: read-qt-version
-        run: echo "::set-output name=version::${{ steps.read-qt-json.outputs.value }}"
+          property: qt-version-major
+      - id: read-qt-major-version
+        run: echo "::set-output name=version::${{ steps.read-qt-json-major.outputs.value }}"
+      - id: read-qt-json-minor
+        uses: ashley-taylor/read-json-property-action@v1.0
+        with:
+          path: ./project/versions.json
+          property: qt-version-minor
+      - id: read-qt-minor-version
+        run: echo "::set-output name=version::${{ steps.read-qt-json-minor.outputs.value }}"
   build-qt-x86:
     needs: read-versions
     uses: 6ziv/QtStaticBuildForWindows/.github/workflows/build-qt-workflow.yml@main
     with: 
       zlib-version: ${{ needs.read-versions.outputs.zlib-version }}
       openssl-version: ${{ needs.read-versions.outputs.openssl-version }}
-      qt-version: ${{ needs.read-versions.outputs.qt-version }}
+      qt-version-major: ${{ needs.read-versions.outputs.qt-version-major }}
+      qt-version-minor: ${{ needs.read-versions.outputs.qt-version-minor }}
       arch: 'x86'
   build-qt-x64:
     needs: read-versions
